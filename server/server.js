@@ -10,7 +10,7 @@ const app = express();
 require('colors');
 const routes = require('./routes');
 const connectDB = require('./config/connection');
-const { typeDefs, resolvers } = require('./schemas');
+const { typeDefs, resolvers } = require('./schema');
 
 const PORT = process.env.PORT || 3001;
 const GRAPHQL_PORT = process.env.GQL_PORT || 4000;
