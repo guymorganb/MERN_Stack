@@ -16,6 +16,7 @@ module.exports = {
 
     res.json(foundUser);
   },
+  
   // create a user, sign a token, and send it back (to client/src/components/SignUpForm.js)
   async createUser({ body }, res) {
     const user = await User.create(body);
@@ -26,6 +27,7 @@ module.exports = {
     const token = signToken(user);
     res.json({ token, user });
   },
+
   // login a user, sign a token, and send it back (to client/src/components/LoginForm.js)
   // {body} is destructured req.body
   async login({ body }, res) {
@@ -42,14 +44,26 @@ module.exports = {
     const token = signToken(user);
     res.json({ token, user });
   },
+
   // save a book to a user's `savedBooks` field by adding it to the set (to prevent duplicates)
   // user comes from `req.user` created in the auth middleware function
   async saveBook({ user, body }, res) {
     console.log(user);
     try {
+      const { googleBookId, authors, description, image, link, title } = body;
+
+      const bookToSave = {
+        bookId: googleBookId, // <-- This ensures that bookId is Google's book ID
+        authors,
+        description,
+        image,
+        link,
+        title
+      };
+      
       const updatedUser = await User.findOneAndUpdate(
         { _id: user._id },
-        { $addToSet: { savedBooks: body } },
+        { $addToSet: { savedBooks: bookToSave } },
         { new: true, runValidators: true }
       );
       return res.json(updatedUser);
@@ -58,6 +72,7 @@ module.exports = {
       return res.status(400).json(err);
     }
   },
+
   // remove a book from `savedBooks`
   async deleteBook({ user, params }, res) {
     const updatedUser = await User.findOneAndUpdate(

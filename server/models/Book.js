@@ -5,6 +5,7 @@ const bookSchema = new Schema({
   authors: [
     {
       type: String,
+      ref:'Authors'
     },
   ],
   description: {
