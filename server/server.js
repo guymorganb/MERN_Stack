@@ -1,55 +1,70 @@
 // Third-party imports
-const path = require('path');
-const { ApolloServer } = require('@apollo/server');
-const { startStandaloneServer } = require('@apollo/server/standalone');
 const express = require('express');
-const app = express();
-
-
-// Local imports
-require('colors');
-const routes = require('./routes');
-const connectDB = require('./config/connection');
+const { ApolloServer } = require('apollo-server-express');
+const path = require('path');
+const { authMiddleware } = require('./utils/auth');
+require('dotenv').config();
 const { typeDefs, resolvers } = require('./schema');
+const connectDB = require('./config/connection');
+const app = express();
+const PORT = process.env.PORT || 3001; // express takes a port, and Apollo take the other
 
-const PORT = process.env.PORT || 3001;
-const GRAPHQL_PORT = process.env.GQL_PORT || 4000;
+const server = new ApolloServer({ 
+  typeDefs, 
+  resolvers, 
+  context: authMiddleware, //sets the context so the auth middleware
+});
+
+// Express Middleware
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 (async () => {
   try {
       // Connect to MongoDB
     await connectDB();
-
-      // Express Middleware
-    app.use(express.urlencoded({ extended: true }));
-    app.use(express.json());
-      // API routes
-    app.use(routes);
     
       // Apollo Server setup
-    const server = new ApolloServer({ typeDefs, resolvers });
-    //await server.start();
-    const { url } = await startStandaloneServer(server, {
-      context: async ({ req, res }) => ({ token: req.headers.token, res }),
-      listen: { port: GRAPHQL_PORT},
-    });
-    console.log(`🚀  ${'Server ready at'.green} ${url.yellow}`);
-    console.log(`🚀  ${'Query at'.magenta} ${'https://studio.apollographql.com/dev'.yellow}`);
+    await server.start();
+    server.applyMiddleware({ app });
+      
+    // Serve static assets in production
     
-    // Middleware not needed if using standalone apollo server
-    // server.applyMiddleware({ app });
+    app.use(express.static(path.join(__dirname, '../client/build')));
+    
 
-      // Serve static assets in production
-    if (process.env.NODE_ENV === 'production') {
-      app.use(express.static(path.join(__dirname, '../client/build')));
-    }
-
+    app.get('/', (req, res) => {
+      res.sendFile(path.join(__dirname, '../client/build/index.html'));
+      //console.log('Catch-All route requested:', req.originalUrl);
+      // res.sendFile(path.join(__dirname, '../client/build/index.html'));
+    });
+    
     // Start the server
     app.listen(PORT, () => {
-      console.log(`Express Now listening on localhost:${PORT}`);
+      console.log(`Express server running on port ${PORT}!`);
+      console.log(`Use GraphQL at http://localhost:${PORT}${server.graphqlPath}`);
     });
     
   } catch (error) {
     console.error('Error during server startup:', error);
   }
 })();
+// Flow of GraphQL API the return trip from the Database is the same flow
+// just backwards
+/**
+ * 
+User(makes request to single GraphQL "endpoint")
+   |
+   v
+Apollo Server (parses request, validates against typeDefs)
+   |
+   v
+Resolvers (receive routed request, execute business logic or delegate to controllers)
+   |
+   v
+user-controller (receives function call from resolvers)
+   |
+   v
+Model (interacts with database, executes CRUD operations)
+
+ */

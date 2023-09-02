@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Container,
-  Col,
-  Form,
-  Button,
-  Card,
-  Row
-} from 'react-bootstrap';
+import { Container, Col, Form, Button, Card, Row } from 'react-bootstrap';
+
+import { useMutation } from '@apollo/client';
+// import the mutation
+import { SAVE_BOOK } from '../utils/mutations'
 
 import Auth from '../utils/auth';
-import { saveBook, searchGoogleBooks } from '../utils/API';
+import { searchGoogleBooks } from '../utils/queries';
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
 
 const SearchBooks = () => {
@@ -17,9 +14,10 @@ const SearchBooks = () => {
   const [searchedBooks, setSearchedBooks] = useState([]);
   // create state for holding our search field data
   const [searchInput, setSearchInput] = useState('');
-
   // create state to hold saved bookId values
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
+  // use Apollos useMutation hook
+  const [saveBookMutation, {error}] = useMutation(SAVE_BOOK);
 
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
@@ -72,18 +70,21 @@ const SearchBooks = () => {
     }
 
     try {
-      const response = await saveBook(bookToSave, token);
+        // Use the Apollo mutation function instead of the API's saveBook
+    const { data } = await saveBookMutation({
+      variables: { book: bookToSave } // this needs to match what you declared in the GraphQL mutation
+    });
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      // if book successfully saves to user's account, save book id to state
-      setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-    } catch (err) {
-      console.error(err);
+    if (!data.saveBook) {
+      throw new Error('something went wrong saving the book!');
     }
-  };
+
+     // If the book successfully saves to the user's account, save book id to state
+    setSavedBookIds([...savedBookIds, bookToSave.bookId]);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <>
