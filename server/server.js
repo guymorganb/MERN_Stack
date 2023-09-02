@@ -8,7 +8,7 @@ const { typeDefs, resolvers } = require('./schema');
 const connectDB = require('./config/connection');
 const app = express();
 const PORT = process.env.PORT || 3001; // express takes a port, and Apollo take the other
-
+// setting for apollo server
 const server = new ApolloServer({ 
   typeDefs, 
   resolvers, 
