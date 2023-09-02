@@ -54,7 +54,7 @@ const SavedBooks = () => {
         variables: { bookId },
         refetchQueries: [{ query: GET_ME }],
       });
-      console.log("Mutation Response: ", data);
+      //console.log("Mutation Response: ", data);
       if (!data.removeBook) {
         throw new Error('Something went wrong!');
       }
