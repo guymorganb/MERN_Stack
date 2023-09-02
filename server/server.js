@@ -29,7 +29,7 @@ app.use(express.json());
     server.applyMiddleware({ app });
       
     // Serve static assets in production
-    if (process.env.ENV === 'production') {
+    if (process.env.NODE_ENV === 'production') {
       app.use(express.static(path.join(__dirname, '../client/build')));
       
       app.get('*', (req, res) => {

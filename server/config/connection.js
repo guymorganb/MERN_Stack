@@ -7,7 +7,7 @@ const connectDB = async () => {
         const password = encodeURIComponent(process.env.MONGOPASS);
         const dbName = 'googlebooks'; // Connects to lowercase 't'est database
         // The options {useNewUrlParser: true, useUnifiedTopology: true} are provided to avoid deprecation warnings.
-        const mongoURI = `mongodb+srv://guymorganb:aFNIQ5lxUCQ062b1@cluster0.xpeybn2.mongodb.net/`;
+        const mongoURI = process.env.MONGODB_URI;
         console.log(username, password)
         await mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
