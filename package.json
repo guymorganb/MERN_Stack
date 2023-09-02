@@ -5,9 +5,7 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "dev": "concurrently \"cd server && npm run watch\" \"cd client && npm start\"",
-    "install": "cd server && npm i && cd ../client && npm i",
-    "build": "cd client && npm run build"
+    "heroku-postbuild":"npm install --prefix client && npm install --prefix server && npm run build --prefix client"
   },
   "keywords": [],
   "author": "",
