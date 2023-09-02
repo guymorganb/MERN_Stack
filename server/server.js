@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 3001; // express takes a port, and Apollo take 
 const server = new ApolloServer({ 
   typeDefs, 
   resolvers, 
+  persistedQueries: false,
+  cache: 'bounded',
   context: authMiddleware, //sets the context so the auth middleware
 });
 
